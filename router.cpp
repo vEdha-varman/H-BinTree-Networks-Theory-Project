@@ -69,7 +69,11 @@ public:
 	BSTreeNode *right = NULL;
 	BSTreeNode *child = NULL;
 	vector<int> rule_ptr;
-	BSTreeNode(string pfx = "") { this->prefix = pfx; }
+	BSTreeNode(string pfx = "", vector<int> rptr = {})
+	{
+		this->prefix = pfx;
+		rule_ptr = rptr;
+	}
 };
 
 void printLevelOrder(BSTreeNode *root)
@@ -96,12 +100,12 @@ void printLevelOrder(BSTreeNode *root)
 			q.push(node->right);
 	}
 }
-
+/**
 // class BSTree
 // {
 // public:
 // 	BSTreeNode *root = NULL;
-// 	BSTree(/* args */) {}
+// 	BSTree(/* args * /) {}
 // };
 BSTreeNode *InsertSrc(string src, BSTreeNode *groot)
 {
@@ -130,6 +134,7 @@ BSTreeNode *InsertSrc(string src, BSTreeNode *groot)
 
 	return groot;
 }
+*/
 BSTreeNode *SearchSrc(string src, BSTreeNode *groot)
 {
 	if (groot == NULL)
@@ -138,22 +143,26 @@ BSTreeNode *SearchSrc(string src, BSTreeNode *groot)
 	}
 	else if (strCmp(src, groot->prefix) == -1)
 	{
-		if(groot->left)
+		if (groot->left)
 			return SearchSrc(src, groot->left);
-		else return groot;
+		else
+			return groot;
 	}
 	else if (strCmp(src, groot->prefix) == 1)
 	{
-		if(groot->right)
+		if (groot->right)
 			return SearchSrc(src, groot->right);
-		else return groot;
+		else
+			return groot;
 	}
 	return groot;
 }
+/**
 BSTreeNode *InsertDst(string dst, BSTreeNode *groot, int rptr)
 {
 	if (groot == NULL)
 	{
+		// cout << src<<",";
 		return new BSTreeNode(dst);
 	}
 	else if (strCmp(dst, groot->prefix) == -1)
@@ -166,11 +175,17 @@ BSTreeNode *InsertDst(string dst, BSTreeNode *groot, int rptr)
 	}
 	else if (strCmp(dst, groot->prefix) == 0)
 	{
-		// cout << dst << ":" << groot->prefix << "\nDestn already exists\n\n";
+		// cout << groot->prefix << ":" << src << "\n\nDest Node already exists\n\n";
 		groot->rule_ptr.push_back(rptr);
 	}
+	else
+	{
+		cout << dst << ":" << groot->prefix;
+	}
+
 	return groot;
 }
+*/
 BSTreeNode *SearchDst(string dst, BSTreeNode *groot)
 {
 	if (groot == NULL)
@@ -179,15 +194,17 @@ BSTreeNode *SearchDst(string dst, BSTreeNode *groot)
 	}
 	else if (strCmp(dst, groot->prefix) == -1)
 	{
-		if(groot->left)
+		if (groot->left)
 			return SearchDst(dst, groot->left);
-		else return groot;
+		else
+			return groot;
 	}
 	else if (strCmp(dst, groot->prefix) == 1)
 	{
-		if(groot->right)
+		if (groot->right)
 			return SearchDst(dst, groot->right);
-		else return groot;
+		else
+			return groot;
 	}
 	return groot;
 }
@@ -199,6 +216,32 @@ BSTreeNode *SearchDst(string dst, BSTreeNode *groot)
 // 	{
 // 	}
 // };
+BSTreeNode* Builder(BSTreeNode *groot, Ruleset rt[])
+{
+	// if(groot == NULL) return new BSTreeNode("");
+	groot->left = new BSTreeNode("01");
+	groot->left->left = new BSTreeNode("010");
+	groot->right = new BSTreeNode("101");
+	groot->right->left = new BSTreeNode("1000");
+	groot->right->right = new BSTreeNode("11");
+	groot->right->right->right = new BSTreeNode("111");
+
+	groot->child = new BSTreeNode("10",{2,8});
+	groot->left->child = new BSTreeNode("0",{14});
+	groot->left->child->left = new BSTreeNode("0011",{4});
+	groot->left->child->right = new BSTreeNode("1",{13});
+	groot->left->left->child = new BSTreeNode("00", {10});
+	groot->right->child = new BSTreeNode("1011",{7});
+	groot->right->child->left = new BSTreeNode("0",{12});
+	groot->right->child->right = new BSTreeNode("11",{3,5});
+	groot->right->left->child = new BSTreeNode("", {0});
+	groot->right->right->child = new BSTreeNode("0100",{6});
+	groot->right->right->child->left = new BSTreeNode("00",{11});
+	groot->right->right->child->right = new BSTreeNode("11",{9});
+	groot->right->right->right->child = new BSTreeNode("101",{1});
+
+	return groot;
+}
 
 int main()
 {
@@ -222,20 +265,12 @@ int main()
 	rule_table[13] = {"01", "1", 53, 53, 443, 443, 17};
 	rule_table[14] = {"01", "0", 0, 65535, 5632, 5632, 6};
 
+	/**
 	map<string, vector<int>> m;
 	for (int i = 0; i < 15; i++)
 	{
 		m[rule_table[i].src].push_back(i);
 	}
-
-	// for (auto it : m)
-	// {
-	// 	cout << it.first << ":: ";
-	// for(int itv : it.second)
-	// {
-	// 	cout<< itv << " ";
-	// }cout << "\n";
-	// }cout<<"\n\n\n";
 	bool f = true;
 	for (auto it : m)
 	{
@@ -247,42 +282,28 @@ int main()
 		else
 			InsertSrc(it.first, root);
 	}
-	for(auto it : m)
+	for (int i = 0; i < 15; i++)
 	{
-		f = true;
-		tmp = SearchSrc(it.first, root);
-		for(int itv : it.second)
+		// f = true;
+		tmp = SearchSrc(rule_table[i].src, root);
+		if (tmp->child == NULL)
 		{
-			// cout << tmp->prefix <<"@"<< itv << " ";
-			if(f)
-			{
-				tmp->child = InsertDst(rule_table[itv].dst, tmp->child, itv);
-				f = false;
-			}
-			else
-				InsertDst(rule_table[itv].dst, tmp->child, itv);
+			tmp->child = InsertDst(rule_table[i].dst, tmp->child, i);
+			// f = false;
 		}
+		else
+			InsertDst(rule_table[i].dst, tmp->child, i);
 	}
+	*/
+	root = new BSTreeNode("");
+	Builder(root, rule_table);
 	// printLevelOrder(root);
- 	cout << SearchDst("0011", SearchSrc("01", root))->rule_ptr[0];
 
-	/**
-	 * print the src prefixes in order
-	 * then dest prefixes in order
-	 * 
-	 * then a search function, thats all
-	 */
-
-	cout << "\n\nUnder construction..\n\n"
-		 << strCmp("010", "01");
+	Ruleset pckt = {"011", "00", 1025, 1025, 1026, 1026, 6};
+	BSTreeNode *temp = SearchDst(pckt.dst, SearchSrc(pckt.src, root)->child);
+	cout << "\n\nRule followed::";
+	if(temp)
+		cout <<temp->rule_ptr[0];//<<" "<<strCmp("011","01");
+	
 	return 0;
 }
-
-/**
- * first the strCmp() should be able to tell whether the first arg should be to left(0) or right(1) to the 2nd arg
- * 
- * then comes the tree alone
- * 
- * then the clients and servers with ip address kick in,
- * followed by port(/ranges)
- */
