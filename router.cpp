@@ -301,9 +301,14 @@ int main()
 
 	Ruleset pckt = {"011", "00", 1025, 1025, 1026, 1026, 6};
 	BSTreeNode *temp = SearchDst(pckt.dst, SearchSrc(pckt.src, root)->child);
-	cout << "\n\nRule followed::";
+	cout << "\n\nRule followed:: ";
 	if(temp)
-		cout <<temp->rule_ptr[0];//<<" "<<strCmp("011","01");
+	{
+		if(rule_table[ temp->rule_ptr[0]].protocol == pckt.protocol)
+			cout <<temp->rule_ptr[0];//<<" "<<strCmp("011","01");
+		else
+			cout << temp->rule_ptr[1];
+	}
 	
 	return 0;
 }
