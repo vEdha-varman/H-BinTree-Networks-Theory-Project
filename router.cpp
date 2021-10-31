@@ -4,9 +4,12 @@
 #include <vector>
 #include <map>
 #include <queue>
+#include <chrono>
+#include <windows.h>
 // #include <bits/stdc++.h>
 
 using namespace std;
+using namespace std::chrono;
 
 int strCmp(string a, string b)
 {
@@ -76,6 +79,23 @@ public:
 	}
 };
 
+class TrieNode
+{
+public:
+	string prefix;
+	TrieNode *left = NULL;
+	TrieNode *right = NULL;
+	TrieNode *child = NULL;
+	bool isValid = false;
+	vector<int> rule_ptr;
+	TrieNode(string pfx = "", vector<int> rptr = {}, bool valid = false)
+	{
+		this->prefix = pfx;
+		rule_ptr = rptr;
+		isValid = valid;
+	}
+};
+
 void printLevelOrder(BSTreeNode *root)
 {
 	if (root == NULL)
@@ -135,8 +155,21 @@ BSTreeNode *InsertSrc(string src, BSTreeNode *groot)
 	return groot;
 }
 */
+int LinearSearch(Ruleset rules[], string src, string dst) {
+	for (int i = 0; i < 15; i++)
+	{
+		Sleep(1);
+		if (src == rules[i].src && dst == rules[i].dst)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 BSTreeNode *SearchSrc(string src, BSTreeNode *groot)
 {
+	Sleep(1);
 	if (groot == NULL)
 	{
 		return NULL;
@@ -154,6 +187,31 @@ BSTreeNode *SearchSrc(string src, BSTreeNode *groot)
 			return SearchSrc(src, groot->right);
 		else
 			return groot;
+	}
+	return groot;
+}
+TrieNode *HTrie_SearchSrc(string src, TrieNode *groot, int i=0, TrieNode *bestMatch=NULL)
+{
+	Sleep(1);
+	if (groot == NULL)
+	{
+		return NULL;
+	}
+	else if (src[i] == '0')
+	{
+		if(groot->isValid) bestMatch = groot;
+		if (groot->left)
+			return HTrie_SearchSrc(src, groot->left, i+1, bestMatch);
+		else
+			return bestMatch;
+	}
+	else if (src[i] == '1')
+	{
+		if(groot->isValid) bestMatch = groot;
+		if (groot->right)
+			return HTrie_SearchSrc(src, groot->right, i+1, bestMatch);
+		else
+			return bestMatch;
 	}
 	return groot;
 }
@@ -188,6 +246,7 @@ BSTreeNode *InsertDst(string dst, BSTreeNode *groot, int rptr)
 */
 BSTreeNode *SearchDst(string dst, BSTreeNode *groot)
 {
+	Sleep(1);
 	if (groot == NULL)
 	{
 		return NULL;
@@ -208,6 +267,31 @@ BSTreeNode *SearchDst(string dst, BSTreeNode *groot)
 	}
 	return groot;
 }
+TrieNode *HTrie_SearchDst(string dst, TrieNode *groot, int i=0, TrieNode *bestMatch=NULL)
+{
+	Sleep(1);
+	if (groot == NULL)
+	{
+		return NULL;
+	}
+	else if (dst[i] == '0')
+	{
+		if(groot->isValid) bestMatch = groot;
+		if (groot->left)
+			return HTrie_SearchDst(dst, groot->left, i+1, bestMatch);
+		else
+			return bestMatch;
+	}
+	else if (dst[i] == '1')
+	{
+		if(groot->isValid) bestMatch = groot;
+		if (groot->right)
+			return HTrie_SearchDst(dst, groot->right, i+1, bestMatch);
+		else
+			return bestMatch;
+	}
+	return groot;
+}
 // class HBSTree
 // {
 // public:
@@ -216,6 +300,56 @@ BSTreeNode *SearchDst(string dst, BSTreeNode *groot)
 // 	{
 // 	}
 // };
+
+TrieNode* HTrie_Builder(TrieNode *groot, Ruleset rt[])
+{
+	groot->left = new TrieNode("0");
+	groot->right = new TrieNode("1");
+	groot->left->right = new TrieNode("01",{},true);
+	groot->left->right->left = new TrieNode("010",{},true);
+	groot->right->right = new TrieNode("11",{},true);
+	groot->right->right->right = new TrieNode("111",{},true);
+	groot->right->left = new TrieNode("10");
+	groot->right->left->right = new TrieNode("101",{},true);
+	groot->right->left->left = new TrieNode("100");
+	groot->right->left->left->left = new TrieNode("1000",{},true);
+
+	groot->child = new TrieNode("");
+	groot->child->right = new TrieNode("1");
+	groot->child->right->left = new TrieNode("0",{2,8},true);
+	groot->left->right->child = new TrieNode("");
+	groot->left->right->child->right = new TrieNode("1",{13},true);
+	groot->left->right->child->left = new TrieNode("0",{14},true);
+	groot->left->right->child->left->left = new TrieNode("00");
+	groot->left->right->child->left->left->right = new TrieNode("001");
+	groot->left->right->child->left->left->right->right = new TrieNode("0011",{4},true);
+	groot->left->right->left->child = new TrieNode("");
+	groot->left->right->left->child->left = new TrieNode("0");
+	groot->left->right->left->child->left->left = new TrieNode("00",{10},true);
+	groot->right->right->right->child = new TrieNode("");
+	groot->right->right->right->child->right = new TrieNode("1");
+	groot->right->right->right->child->right->left = new TrieNode("10");
+	groot->right->right->right->child->right->left->right = new TrieNode("101",{1},true);
+	groot->right->left->left->left->child = new TrieNode("",{0},true);
+	groot->right->left->right->child = new TrieNode("");
+	groot->right->left->right->child->left = new TrieNode("0",{12},true);
+	groot->right->left->right->child->right = new TrieNode("1");
+	groot->right->left->right->child->right->right = new TrieNode("11",{3,5},true);
+	groot->right->left->right->child->right->left = new TrieNode("10");
+	groot->right->left->right->child->right->left->right = new TrieNode("101");
+	groot->right->left->right->child->right->left->right->right = new TrieNode("1011",{7},true);
+	groot->right->right->child = new TrieNode("");
+	groot->right->right->child->right = new TrieNode("1");
+	groot->right->right->child->right->right = new TrieNode("11",{9},true);
+	groot->right->right->child->left = new TrieNode("0");
+	groot->right->right->child->left->left = new TrieNode("00",{11},true);
+	groot->right->right->child->left->right = new TrieNode("01");
+	groot->right->right->child->left->right->left = new TrieNode("010");
+	groot->right->right->child->left->right->left->left = new TrieNode("0100",{6},true);
+
+	return groot;
+}
+
 BSTreeNode* Builder(BSTreeNode *groot, Ruleset rt[])
 {
 	// if(groot == NULL) return new BSTreeNode("");
@@ -298,10 +432,26 @@ int main()
 	root = new BSTreeNode("");
 	Builder(root, rule_table);
 	// printLevelOrder(root);
+	TrieNode *troot = new TrieNode("",{},true);
+	HTrie_Builder(troot, rule_table);
+
 
 	Ruleset pckt = {"0110", "0011", 1025, 1025, 1026, 1026, 6};
-	BSTreeNode *temp = SearchDst(pckt.dst, SearchSrc(pckt.src, root)->child);
-	cout << "\n\nRule followed:: "<<temp->rule_ptr[0];
+	BSTreeNode *temp;
+	TrieNode *tempht;
+	auto start = high_resolution_clock::now();
+	int templs;
+	for(int i=0; i<2; i++)
+	{
+		// temp = SearchDst(pckt.dst, SearchSrc(pckt.src, root)->child);
+		// tempht = HTrie_SearchDst(pckt.dst, HTrie_SearchSrc(pckt.src,troot)->child);
+		templs = LinearSearch(rule_table, pckt.src, pckt.dst);
+	}
+	auto stop = high_resolution_clock::now();
+
+	cout << "\n\nRule followed:: "<<templs;//<<temp->rule_ptr[0];
+	auto duration = duration_cast<microseconds>(stop - start);
+	cout << "\nTime taken(micros):: "<< duration.count();
 	// if(temp)
 	// {
 	// 	if(rule_table[ temp->rule_ptr[0]].protocol == pckt.protocol)
